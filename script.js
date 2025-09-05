@@ -2,7 +2,15 @@ const canvas = document.getElementById('tetris');
 const context = canvas.getContext('2d');
 context.scale(20, 20);
 
+let score = 0;
+let startTime = Date.now();
+
+function updateScore() {
+  document.getElementById('score').innerText = score;
+}
+
 function arenaSweep() {
+  let rowCount = 1;
   outer: for (let y = arena.length - 1; y > 0; --y) {
     for (let x = 0; x < arena[y].length; ++x) {
       if (arena[y][x] === 0) {
@@ -12,7 +20,10 @@ function arenaSweep() {
     const row = arena.splice(y, 1)[0].fill(0);
     arena.unshift(row);
     ++y;
+    score += rowCount * 10;
+    rowCount *= 2;
   }
+  updateScore();
 }
 
 function collide(arena, player) {
@@ -86,8 +97,25 @@ function drawMatrix(matrix, offset) {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        context.fillStyle = colors[value];
-        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+        const xPos = x + offset.x;
+        const yPos = y + offset.y;
+        const gradient = context.createLinearGradient(xPos, yPos, xPos + 1, yPos + 1);
+        gradient.addColorStop(0, '#555');
+        gradient.addColorStop(0.5, colors[value]);
+        gradient.addColorStop(1, '#eee');
+        context.fillStyle = gradient;
+        context.fillRect(xPos, yPos, 1, 1);
+        context.strokeStyle = '#444';
+        context.lineWidth = 0.05;
+        context.strokeRect(xPos, yPos, 1, 1);
+        context.strokeStyle = '#777';
+        context.lineWidth = 0.01;
+        context.beginPath();
+        context.moveTo(xPos + 0.5, yPos);
+        context.lineTo(xPos + 0.5, yPos + 1);
+        context.moveTo(xPos, yPos + 0.5);
+        context.lineTo(xPos + 1, yPos + 0.5);
+        context.stroke();
       }
     });
   });
@@ -148,7 +176,7 @@ function playerReset() {
   player.pos.y = 0;
   player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
   if (collide(arena, player)) {
-    arena.forEach(row => row.fill(0));
+    gameOver();
   }
 }
 
@@ -182,6 +210,40 @@ function update(time = 0) {
   requestAnimationFrame(update);
 }
 
+function gameOver() {
+  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+  const name = prompt('Game Over! Enter your name:');
+  const entry = {
+    name: name || 'Anonymous',
+    score,
+    date: new Date().toLocaleDateString(),
+    duration,
+  };
+  const board = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+  board.push(entry);
+  board.sort((a, b) => b.score - a.score);
+  localStorage.setItem('leaderboard', JSON.stringify(board.slice(0, 3)));
+  renderLeaderboard();
+  arena.forEach(row => row.fill(0));
+  score = 0;
+  updateScore();
+  startTime = Date.now();
+}
+
+function renderLeaderboard() {
+  const list = document.getElementById('leaders');
+  list.innerHTML = '';
+  const board = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+  board.slice(0, 3).forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = `${item.name} - ${item.score} - ${item.duration}s - ${item.date}`;
+    list.appendChild(li);
+  });
+  const lb = document.getElementById('leaderboard');
+  lb.classList.remove('hidden');
+  setTimeout(() => lb.classList.add('hidden'), 5000);
+}
+
 document.addEventListener('keydown', event => {
   if (event.keyCode === 37) {
     playerMove(-1);
@@ -198,13 +260,13 @@ document.addEventListener('keydown', event => {
 
 const colors = [
   null,
-  '#FF0D72',
-  '#0DC2FF',
-  '#0DFF72',
-  '#F538FF',
-  '#FF8E0D',
-  '#FFE138',
-  '#3877FF',
+  '#8d8f91',
+  '#b22222',
+  '#556b2f',
+  '#483d8b',
+  '#708090',
+  '#a9a9a9',
+  '#2f4f4f',
 ];
 
 const arena = createMatrix(12, 20);
@@ -213,5 +275,11 @@ const player = {
   matrix: null,
 };
 
-playerReset();
-update();
+function startGame() {
+  startTime = Date.now();
+  playerReset();
+  updateScore();
+  update();
+}
+
+startGame();

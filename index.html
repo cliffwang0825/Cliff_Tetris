@@ -6,7 +6,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="hud">
+    <div>Score: <span id="score">0</span></div>
+  </div>
   <canvas id="tetris" width="240" height="400"></canvas>
+  <div id="leaderboard" class="hidden">
+    <h2>Leaderboard</h2>
+    <ol id="leaders"></ol>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
