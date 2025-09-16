@@ -262,8 +262,10 @@ function getModeConfig(mode) {
 }
 
 const modeSelect = document.getElementById('modeSelect');
+const playfieldLayout = document.getElementById('playfieldLayout');
 const gameArea = document.getElementById('gameArea');
-const scoreboard = document.getElementById('scoreboard');
+const scoreboardLeft = document.getElementById('scoreboardLeft');
+const scoreboardRight = document.getElementById('scoreboardRight');
 const changeModeBtn = document.getElementById('changeMode');
 const controlsButton = document.getElementById('controlsButton');
 const controlsOverlay = document.getElementById('controlsOverlay');
@@ -847,7 +849,20 @@ function createGame({ canvas, panel, controls, label, modeType }) {
 function resetGames() {
   games.length = 0;
   gameArea.innerHTML = '';
-  scoreboard.innerHTML = '';
+  if (gameArea.classList) {
+    gameArea.classList.add('hidden');
+  }
+  if (scoreboardLeft) {
+    scoreboardLeft.innerHTML = '';
+    scoreboardLeft.classList.add('hidden');
+  }
+  if (scoreboardRight) {
+    scoreboardRight.innerHTML = '';
+    scoreboardRight.classList.add('hidden');
+  }
+  if (playfieldLayout) {
+    playfieldLayout.classList.add('hidden');
+  }
   paused = false;
   if (controlsButton) {
     controlsButton.classList.add('hidden');
@@ -897,14 +912,14 @@ function startMode(mode) {
   }
   configureControlsOverlay(config);
 
-  config.players.forEach(playerConfig => {
+  config.players.forEach((playerConfig, index) => {
     const canvas = document.createElement('canvas');
     canvas.width = 240;
     canvas.height = 400;
     gameArea.appendChild(canvas);
 
     const panel = document.createElement('div');
-    panel.className = 'player-panel';
+    panel.className = `player-panel player-${index + 1}`;
     panel.innerHTML = `
       <h3>${playerConfig.label}</h3>
       <div class="stat-line">Score: <span class="score">0</span></div>
@@ -913,10 +928,14 @@ function startMode(mode) {
       <div>Status: <span class="status">Ready</span></div>
       <div class="next-wrapper">
         <div class="next-label">Next</div>
-        <canvas class="next" width="120" height="120"></canvas>
+        <canvas class="next" width="80" height="80"></canvas>
       </div>
     `;
-    scoreboard.appendChild(panel);
+    const targetColumn = index === 0 ? scoreboardLeft : scoreboardRight;
+    if (targetColumn) {
+      targetColumn.classList.remove('hidden');
+      targetColumn.appendChild(panel);
+    }
 
     const game = createGame({
       canvas,
@@ -936,6 +955,9 @@ function startMode(mode) {
   games.forEach(game => game.start());
 
   modeSelect.classList.add('hidden');
+  if (playfieldLayout) {
+    playfieldLayout.classList.remove('hidden');
+  }
   gameArea.classList.remove('hidden');
   changeModeBtn.classList.remove('hidden');
   changeModeBtn.disabled = false;

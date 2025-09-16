@@ -22,12 +22,24 @@ body {
   box-sizing: border-box;
 }
 
-#scoreboard {
+#playfieldLayout {
   display: flex;
-  gap: 16px;
   flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: center;
-  width: 100%;
+  gap: 24px;
+  width: min(1200px, 100%);
+  margin: 0 auto 40px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.scoreboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 0 0 220px;
+  align-items: stretch;
 }
 
 .player-panel {
@@ -77,8 +89,8 @@ body {
 }
 
 .player-panel .next-wrapper canvas {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   background: #070707;
   border: 2px solid #555;
   border-radius: 6px;
@@ -137,14 +149,34 @@ body {
   #hud {
     padding: 0 16px;
   }
+  #playfieldLayout {
+    gap: 16px;
+    padding: 0 16px;
+  }
+  .scoreboard-column {
+    flex: 0 0 200px;
+  }
+}
 
-  .player-panel {
-    flex: 1 1 200px;
+@media (max-width: 900px) {
+  #playfieldLayout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .scoreboard-column {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 320px;
+  }
+  #gameArea {
+    width: 100%;
+    justify-content: center;
   }
 }
 
 #gameArea {
   display: flex;
+  flex: 0 1 auto;
   gap: 24px;
   justify-content: center;
   align-items: flex-start;
