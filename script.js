@@ -268,6 +268,8 @@ const changeModeBtn = document.getElementById('changeMode');
 const message = document.getElementById('message');
 const leaderboard = document.getElementById('leaderboard');
 const leadersList = document.getElementById('leaders');
+const controlHintsLeft = document.getElementById('controlHintsLeft');
+const controlHintsRight = document.getElementById('controlHintsRight');
 
 const games = [];
 let messageTimeout = null;
@@ -338,34 +340,75 @@ function playSound(type) {
   }
 
   if (type === 'clear') {
-    const blast = audioContext.createBufferSource();
-    blast.buffer = createNoiseBuffer(0.55, 1.15);
-    const blastFilter = audioContext.createBiquadFilter();
-    blastFilter.type = 'bandpass';
-    blastFilter.frequency.setValueAtTime(260, now);
-    blastFilter.Q.setValueAtTime(0.9, now);
-    const blastGain = audioContext.createGain();
-    blastGain.gain.setValueAtTime(0.0001, now);
-    blastGain.gain.exponentialRampToValueAtTime(0.9, now + 0.03);
-    blastGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-    blast.connect(blastFilter);
-    blastFilter.connect(blastGain);
-    blastGain.connect(audioContext.destination);
-    blast.start(now);
-    blast.stop(now + 0.6);
+    const crack = audioContext.createBufferSource();
+    crack.buffer = createNoiseBuffer(0.28, 0.7);
+    const crackFilter = audioContext.createBiquadFilter();
+    crackFilter.type = 'highpass';
+    crackFilter.frequency.setValueAtTime(320, now);
+    const crackGain = audioContext.createGain();
+    crackGain.gain.setValueAtTime(0.0001, now);
+    crackGain.gain.exponentialRampToValueAtTime(1.1, now + 0.015);
+    crackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    crack.connect(crackFilter);
+    crackFilter.connect(crackGain);
+    crackGain.connect(audioContext.destination);
+    crack.start(now);
+    crack.stop(now + 0.22);
 
-    const boom = audioContext.createOscillator();
-    const boomGain = audioContext.createGain();
-    boom.type = 'sawtooth';
-    boom.frequency.setValueAtTime(160, now);
-    boom.frequency.exponentialRampToValueAtTime(40, now + 0.6);
-    boomGain.gain.setValueAtTime(0.0001, now);
-    boomGain.gain.exponentialRampToValueAtTime(0.7, now + 0.04);
-    boomGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
-    boom.connect(boomGain);
-    boomGain.connect(audioContext.destination);
-    boom.start(now);
-    boom.stop(now + 0.65);
+    const shock = audioContext.createOscillator();
+    const shockGain = audioContext.createGain();
+    shock.type = 'sawtooth';
+    shock.frequency.setValueAtTime(380, now);
+    shock.frequency.exponentialRampToValueAtTime(70, now + 0.55);
+    shockGain.gain.setValueAtTime(0.0001, now);
+    shockGain.gain.exponentialRampToValueAtTime(0.9, now + 0.04);
+    shockGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+    shock.connect(shockGain);
+    shockGain.connect(audioContext.destination);
+    shock.start(now);
+    shock.stop(now + 0.6);
+
+    const spark = audioContext.createOscillator();
+    const sparkGain = audioContext.createGain();
+    spark.type = 'triangle';
+    spark.frequency.setValueAtTime(1200, now);
+    spark.frequency.exponentialRampToValueAtTime(420, now + 0.32);
+    sparkGain.gain.setValueAtTime(0.0001, now);
+    sparkGain.gain.exponentialRampToValueAtTime(0.35, now + 0.025);
+    sparkGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    spark.connect(sparkGain);
+    sparkGain.connect(audioContext.destination);
+    spark.start(now + 0.03);
+    spark.stop(now + 0.35);
+
+    const debris = audioContext.createBufferSource();
+    debris.buffer = createNoiseBuffer(0.7, 2.6);
+    const debrisFilter = audioContext.createBiquadFilter();
+    debrisFilter.type = 'bandpass';
+    debrisFilter.frequency.setValueAtTime(1600, now);
+    debrisFilter.Q.setValueAtTime(0.8, now);
+    const debrisGain = audioContext.createGain();
+    debrisGain.gain.setValueAtTime(0.0001, now);
+    debrisGain.gain.exponentialRampToValueAtTime(0.6, now + 0.08);
+    debrisGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+    debris.connect(debrisFilter);
+    debrisFilter.connect(debrisGain);
+    debrisGain.connect(audioContext.destination);
+    debris.start(now + 0.05);
+    debris.stop(now + 0.75);
+
+    const rumble = audioContext.createOscillator();
+    const rumbleGain = audioContext.createGain();
+    rumble.type = 'triangle';
+    rumble.frequency.setValueAtTime(110, now);
+    rumble.frequency.exponentialRampToValueAtTime(36, now + 0.7);
+    rumbleGain.gain.setValueAtTime(0.0001, now);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.7, now + 0.06);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+    rumble.connect(rumbleGain);
+    rumbleGain.connect(audioContext.destination);
+    rumble.start(now + 0.02);
+    rumble.stop(now + 0.75);
     return;
   }
 
@@ -770,6 +813,9 @@ function resetGames() {
   gameArea.innerHTML = '';
   scoreboard.innerHTML = '';
   paused = false;
+  if (controlHintsRight) {
+    controlHintsRight.classList.add('hidden');
+  }
 }
 
 function togglePause() {
@@ -808,6 +854,17 @@ function startMode(mode) {
   clearMessage();
   resetGames();
   paused = false;
+
+  if (controlHintsLeft) {
+    controlHintsLeft.classList.remove('hidden');
+  }
+  if (controlHintsRight) {
+    if (config.players.length > 1) {
+      controlHintsRight.classList.remove('hidden');
+    } else {
+      controlHintsRight.classList.add('hidden');
+    }
+  }
 
   config.players.forEach(playerConfig => {
     const canvas = document.createElement('canvas');
@@ -854,6 +911,7 @@ function startMode(mode) {
 }
 
 function handleKey(event) {
+  initAudio();
   if (event.code === 'KeyP') {
     event.preventDefault();
     togglePause();
