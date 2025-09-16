@@ -265,11 +265,17 @@ const modeSelect = document.getElementById('modeSelect');
 const gameArea = document.getElementById('gameArea');
 const scoreboard = document.getElementById('scoreboard');
 const changeModeBtn = document.getElementById('changeMode');
+const controlsButton = document.getElementById('controlsButton');
+const controlsOverlay = document.getElementById('controlsOverlay');
+const closeControlsBtn = document.getElementById('closeControls');
+const controlsPlayerTwo = document.getElementById('controlsPlayer2');
+const controlsModeNote = document.getElementById('controlsModeNote');
 const message = document.getElementById('message');
 const leaderboard = document.getElementById('leaderboard');
 const leadersList = document.getElementById('leaders');
-const controlHintsLeft = document.getElementById('controlHintsLeft');
-const controlHintsRight = document.getElementById('controlHintsRight');
+
+const DEFAULT_MODE_NOTE =
+  'Stack efficiently, keep an eye on the preview, and ride the rhythm of the falling blocks.';
 
 const games = [];
 let messageTimeout = null;
@@ -340,75 +346,63 @@ function playSound(type) {
   }
 
   if (type === 'clear') {
-    const crack = audioContext.createBufferSource();
-    crack.buffer = createNoiseBuffer(0.28, 0.7);
-    const crackFilter = audioContext.createBiquadFilter();
-    crackFilter.type = 'highpass';
-    crackFilter.frequency.setValueAtTime(320, now);
-    const crackGain = audioContext.createGain();
-    crackGain.gain.setValueAtTime(0.0001, now);
-    crackGain.gain.exponentialRampToValueAtTime(1.1, now + 0.015);
-    crackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-    crack.connect(crackFilter);
-    crackFilter.connect(crackGain);
-    crackGain.connect(audioContext.destination);
-    crack.start(now);
-    crack.stop(now + 0.22);
+    const blast = audioContext.createBufferSource();
+    blast.buffer = createNoiseBuffer(0.48, 1.4);
+    const blastFilter = audioContext.createBiquadFilter();
+    blastFilter.type = 'lowpass';
+    blastFilter.frequency.setValueAtTime(420, now);
+    blastFilter.Q.setValueAtTime(0.9, now);
+    const blastGain = audioContext.createGain();
+    blastGain.gain.setValueAtTime(0.0001, now);
+    blastGain.gain.exponentialRampToValueAtTime(0.95, now + 0.035);
+    blastGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.52);
+    blast.connect(blastFilter);
+    blastFilter.connect(blastGain);
+    blastGain.connect(audioContext.destination);
+    blast.start(now);
+    blast.stop(now + 0.55);
 
     const shock = audioContext.createOscillator();
     const shockGain = audioContext.createGain();
-    shock.type = 'sawtooth';
-    shock.frequency.setValueAtTime(380, now);
-    shock.frequency.exponentialRampToValueAtTime(70, now + 0.55);
+    shock.type = 'square';
+    shock.frequency.setValueAtTime(160, now);
+    shock.frequency.exponentialRampToValueAtTime(58, now + 0.4);
     shockGain.gain.setValueAtTime(0.0001, now);
-    shockGain.gain.exponentialRampToValueAtTime(0.9, now + 0.04);
-    shockGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+    shockGain.gain.exponentialRampToValueAtTime(0.42, now + 0.03);
+    shockGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
     shock.connect(shockGain);
     shockGain.connect(audioContext.destination);
-    shock.start(now);
-    shock.stop(now + 0.6);
+    shock.start(now + 0.01);
+    shock.stop(now + 0.46);
 
-    const spark = audioContext.createOscillator();
-    const sparkGain = audioContext.createGain();
-    spark.type = 'triangle';
-    spark.frequency.setValueAtTime(1200, now);
-    spark.frequency.exponentialRampToValueAtTime(420, now + 0.32);
-    sparkGain.gain.setValueAtTime(0.0001, now);
-    sparkGain.gain.exponentialRampToValueAtTime(0.35, now + 0.025);
-    sparkGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-    spark.connect(sparkGain);
-    sparkGain.connect(audioContext.destination);
-    spark.start(now + 0.03);
-    spark.stop(now + 0.35);
-
-    const debris = audioContext.createBufferSource();
-    debris.buffer = createNoiseBuffer(0.7, 2.6);
-    const debrisFilter = audioContext.createBiquadFilter();
-    debrisFilter.type = 'bandpass';
-    debrisFilter.frequency.setValueAtTime(1600, now);
-    debrisFilter.Q.setValueAtTime(0.8, now);
-    const debrisGain = audioContext.createGain();
-    debrisGain.gain.setValueAtTime(0.0001, now);
-    debrisGain.gain.exponentialRampToValueAtTime(0.6, now + 0.08);
-    debrisGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
-    debris.connect(debrisFilter);
-    debrisFilter.connect(debrisGain);
-    debrisGain.connect(audioContext.destination);
-    debris.start(now + 0.05);
-    debris.stop(now + 0.75);
+    const shrapnel = audioContext.createBufferSource();
+    shrapnel.buffer = createNoiseBuffer(0.4, 2.2);
+    const shrapnelFilter = audioContext.createBiquadFilter();
+    shrapnelFilter.type = 'bandpass';
+    shrapnelFilter.frequency.setValueAtTime(850, now);
+    shrapnelFilter.Q.setValueAtTime(1.2, now);
+    const shrapnelGain = audioContext.createGain();
+    shrapnelGain.gain.setValueAtTime(0.0001, now);
+    shrapnelGain.gain.exponentialRampToValueAtTime(0.33, now + 0.06);
+    shrapnelGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+    shrapnel.connect(shrapnelFilter);
+    shrapnelFilter.connect(shrapnelGain);
+    shrapnelGain.connect(audioContext.destination);
+    shrapnel.start(now + 0.02);
+    shrapnel.stop(now + 0.5);
 
     const rumble = audioContext.createOscillator();
     const rumbleGain = audioContext.createGain();
-    rumble.type = 'triangle';
-    rumble.frequency.setValueAtTime(110, now);
-    rumble.frequency.exponentialRampToValueAtTime(36, now + 0.7);
+    rumble.type = 'sine';
+    rumble.frequency.setValueAtTime(72, now);
+    rumble.frequency.exponentialRampToValueAtTime(28, now + 0.9);
     rumbleGain.gain.setValueAtTime(0.0001, now);
-    rumbleGain.gain.exponentialRampToValueAtTime(0.7, now + 0.06);
-    rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.48, now + 0.08);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
     rumble.connect(rumbleGain);
     rumbleGain.connect(audioContext.destination);
-    rumble.start(now + 0.02);
-    rumble.stop(now + 0.75);
+    rumble.start(now + 0.04);
+    rumble.stop(now + 0.92);
     return;
   }
 
@@ -423,6 +417,48 @@ function playSound(type) {
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
   osc.start(now);
   osc.stop(now + 0.25);
+}
+
+function hideControlsOverlay() {
+  if (controlsOverlay) {
+    controlsOverlay.classList.add('hidden');
+  }
+}
+
+function resetControlsOverlay() {
+  hideControlsOverlay();
+  if (controlsPlayerTwo) {
+    controlsPlayerTwo.classList.add('hidden');
+  }
+  if (controlsModeNote) {
+    controlsModeNote.textContent = DEFAULT_MODE_NOTE;
+  }
+}
+
+function configureControlsOverlay(config) {
+  if (!config) {
+    resetControlsOverlay();
+    return;
+  }
+  if (controlsPlayerTwo) {
+    if (config.players.length > 1) {
+      controlsPlayerTwo.classList.remove('hidden');
+    } else {
+      controlsPlayerTwo.classList.add('hidden');
+    }
+  }
+  if (controlsModeNote) {
+    if (config.survival && config.players.length > 1) {
+      controlsModeNote.textContent =
+        'Survival duel: clear lines to dump surprise rubble onto your opponent.';
+    } else if (config.players.length > 1) {
+      controlsModeNote.textContent =
+        'Dual score mode: race your rival for points and keep both fields clean.';
+    } else {
+      controlsModeNote.textContent =
+        'Solo mode: chain line clears to climb the rankings before the stack tops out.';
+    }
+  }
 }
 
 function showMessage(text, duration = 4000) {
@@ -813,9 +849,10 @@ function resetGames() {
   gameArea.innerHTML = '';
   scoreboard.innerHTML = '';
   paused = false;
-  if (controlHintsRight) {
-    controlHintsRight.classList.add('hidden');
+  if (controlsButton) {
+    controlsButton.classList.add('hidden');
   }
+  resetControlsOverlay();
 }
 
 function togglePause() {
@@ -855,16 +892,10 @@ function startMode(mode) {
   resetGames();
   paused = false;
 
-  if (controlHintsLeft) {
-    controlHintsLeft.classList.remove('hidden');
+  if (controlsButton) {
+    controlsButton.classList.remove('hidden');
   }
-  if (controlHintsRight) {
-    if (config.players.length > 1) {
-      controlHintsRight.classList.remove('hidden');
-    } else {
-      controlHintsRight.classList.add('hidden');
-    }
-  }
+  configureControlsOverlay(config);
 
   config.players.forEach(playerConfig => {
     const canvas = document.createElement('canvas');
@@ -912,6 +943,15 @@ function startMode(mode) {
 
 function handleKey(event) {
   initAudio();
+  if (
+    event.code === 'Escape' &&
+    controlsOverlay &&
+    !controlsOverlay.classList.contains('hidden')
+  ) {
+    event.preventDefault();
+    hideControlsOverlay();
+    return;
+  }
   if (event.code === 'KeyP') {
     event.preventDefault();
     togglePause();
@@ -966,6 +1006,26 @@ changeModeBtn.addEventListener('click', () => {
   clearMessage();
   modeSelect.classList.remove('hidden');
 });
+
+if (controlsButton) {
+  controlsButton.addEventListener('click', () => {
+    if (controlsOverlay) {
+      controlsOverlay.classList.remove('hidden');
+    }
+  });
+}
+
+if (closeControlsBtn) {
+  closeControlsBtn.addEventListener('click', hideControlsOverlay);
+}
+
+if (controlsOverlay) {
+  controlsOverlay.addEventListener('click', event => {
+    if (event.target === controlsOverlay) {
+      hideControlsOverlay();
+    }
+  });
+}
 
 function globalUpdate(time = 0) {
   games.forEach(game => game.update(time));

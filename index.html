@@ -16,45 +16,54 @@
     </div>
   </div>
 
-  <div id="hud">
-    <aside id="controlHintsLeft" class="control-hints">
-      <h2>Player 1 Controls</h2>
-      <p class="control-note">Plan your moves with the preview piece and keep the rhythm going.</p>
-      <ul class="control-list">
-        <li><span class="key">←</span> Move Left</li>
-        <li><span class="key">→</span> Move Right</li>
-        <li><span class="key">↓</span> Soft Drop</li>
-        <li><span class="key">↑</span> Rotate Clockwise</li>
-        <li><span class="key">/</span> Rotate Counter-Clockwise</li>
-        <li><span class="key">Space</span> Hard Drop</li>
-      </ul>
-    </aside>
-
-    <div id="hudCenter" class="hud-center">
-      <div id="scoreboard"></div>
-      <div id="globalControls" class="control-hints">
-        <h2>Match Controls</h2>
-        <ul class="control-list">
-          <li><span class="key">P</span> Pause / Resume</li>
-          <li><span class="key">R</span> Restart Current Match</li>
-          <li><span class="key">Mode</span> Change Mode</li>
-        </ul>
+  <div id="controlsOverlay" class="overlay hidden controls-overlay">
+    <div class="panel controls-panel">
+      <h2>Control Reference</h2>
+      <p id="controlsModeNote" class="controls-note">Stack efficiently, keep an eye on the preview, and ride the rhythm of the falling blocks.</p>
+      <div class="controls-columns">
+        <section id="controlsPlayer1" class="controls-section">
+          <h3>Player 1</h3>
+          <ul class="control-list">
+            <li><span class="key">←</span> Move Left</li>
+            <li><span class="key">→</span> Move Right</li>
+            <li><span class="key">↓</span> Soft Drop</li>
+            <li><span class="key">↑</span> Rotate Clockwise</li>
+            <li><span class="key">/</span> Rotate Counter-Clockwise</li>
+            <li><span class="key">Space</span> Hard Drop</li>
+          </ul>
+        </section>
+        <section id="controlsPlayer2" class="controls-section hidden">
+          <h3>Player 2</h3>
+          <ul class="control-list">
+            <li><span class="key">A</span> Move Left</li>
+            <li><span class="key">D</span> Move Right</li>
+            <li><span class="key">S</span> Soft Drop</li>
+            <li><span class="key">W</span> Rotate Clockwise</li>
+            <li><span class="key">Q</span> Rotate Counter-Clockwise</li>
+            <li><span class="key">F</span> Hard Drop</li>
+          </ul>
+        </section>
+        <section class="controls-section">
+          <h3>Match</h3>
+          <ul class="control-list">
+            <li><span class="key">P</span> Pause / Resume</li>
+            <li><span class="key">R</span> Restart Current Match</li>
+            <li><span class="key">Mode</span> Change Mode</li>
+          </ul>
+        </section>
       </div>
-      <button id="changeMode" class="metal-button hidden">Change Mode</button>
+      <button id="closeControls" class="metal-button">Close</button>
     </div>
+  </div>
 
-    <aside id="controlHintsRight" class="control-hints hidden">
-      <h2>Player 2 Controls</h2>
-      <p class="control-note">Stay sharp and send lines back at your rival.</p>
-      <ul class="control-list">
-        <li><span class="key">A</span> Move Left</li>
-        <li><span class="key">D</span> Move Right</li>
-        <li><span class="key">S</span> Soft Drop</li>
-        <li><span class="key">W</span> Rotate Clockwise</li>
-        <li><span class="key">Q</span> Rotate Counter-Clockwise</li>
-        <li><span class="key">F</span> Hard Drop</li>
-      </ul>
-    </aside>
+  <div id="hud">
+    <div id="hudCenter" class="hud-center">
+      <div class="hud-actions">
+        <button id="controlsButton" class="metal-button hidden">Controls</button>
+        <button id="changeMode" class="metal-button hidden">Change Mode</button>
+      </div>
+      <div id="scoreboard"></div>
+    </div>
   </div>
 
   <div id="gameArea" class="hidden"></div>

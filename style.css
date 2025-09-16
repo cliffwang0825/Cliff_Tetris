@@ -13,10 +13,9 @@ body {
 
 #hud {
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
   width: min(1200px, 100%);
   margin: 40px auto 20px;
   padding: 0 20px;
@@ -86,49 +85,39 @@ body {
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7);
 }
 
+
 .hud-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 18px;
-  flex: 1 1 360px;
+  width: 100%;
 }
 
-.control-hints {
-  background: rgba(18, 18, 18, 0.85);
-  border: 2px solid #505050;
-  border-radius: 12px;
-  padding: 18px 22px;
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.7);
-  flex: 0 0 240px;
-  max-width: 280px;
+.hud-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
 }
 
-.control-hints h2 {
-  margin: 0 0 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #f2f2f2;
-}
-
-.control-hints .control-note {
-  margin: 0 0 14px;
-  font-size: 13px;
-  color: #aaaaaa;
+.hud-actions .metal-button {
+  min-width: 140px;
 }
 
 .control-list {
   margin: 0;
   padding-left: 18px;
-  color: #c0c0c0;
+  color: #d0d0d0;
   list-style: square;
 }
 
 .control-list li {
   margin-bottom: 6px;
+  line-height: 1.6;
 }
 
-.control-hints .key {
+.key {
   display: inline-block;
   min-width: 52px;
   padding: 2px 6px;
@@ -144,34 +133,13 @@ body {
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
 }
 
-#globalControls {
-  flex: 0 1 320px;
-  width: 100%;
-  max-width: 340px;
-}
-
-#controlHintsLeft,
-#controlHintsRight {
-  position: sticky;
-  top: 40px;
-}
-
 @media (max-width: 1100px) {
   #hud {
-    flex-direction: column;
-    align-items: center;
+    padding: 0 16px;
   }
 
-  .hud-center {
-    width: 100%;
-  }
-
-  #controlHintsLeft,
-  #controlHintsRight,
-  #globalControls {
-    position: static;
-    width: min(320px, 100%);
-    max-width: 100%;
+  .player-panel {
+    flex: 1 1 200px;
   }
 }
 
@@ -235,6 +203,65 @@ canvas {
 .overlay .panel p {
   margin: 0 0 24px;
   color: #b0b0b0;
+}
+
+.controls-overlay {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 9;
+}
+
+.controls-overlay .panel {
+  max-width: 620px;
+  width: min(92%, 620px);
+  background: rgba(18, 18, 18, 0.72);
+  border: 1px solid rgba(200, 200, 200, 0.2);
+  text-align: left;
+  padding: 28px 32px;
+}
+
+.controls-overlay .panel h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #f4f4f4;
+}
+
+.controls-note {
+  margin: 0 0 18px;
+  color: rgba(230, 230, 230, 0.85);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.controls-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.controls-section {
+  flex: 1 1 180px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.controls-section h3 {
+  margin: 0 0 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(240, 240, 240, 0.9);
+  font-size: 14px;
+}
+
+.controls-overlay .metal-button {
+  display: block;
+  margin: 22px auto 0;
+  min-width: 140px;
 }
 
 button {
@@ -318,17 +345,14 @@ button:disabled {
 
 @media (max-width: 900px) {
   #hud {
-    flex-direction: column;
-    align-items: center;
+    padding: 0 12px;
   }
 
   #gameArea {
     flex-direction: column;
   }
 
-  #controlHintsLeft,
-  #controlHintsRight,
-  #globalControls {
-    width: min(360px, 100%);
+  .controls-columns {
+    flex-direction: column;
   }
 }
