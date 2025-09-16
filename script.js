@@ -12,6 +12,10 @@ const colors = [
 
 const pieces = 'TJLOSZI';
 
+const BASE_DROP_INTERVAL = 1000;
+const DROP_INTERVAL_STEP = 90;
+const DROP_INTERVAL_FLOOR = 120;
+
 function createMatrix(w, h) {
   const matrix = [];
   while (h--) {
@@ -108,32 +112,82 @@ function rotate(matrix, dir) {
   }
 }
 
+function drawMetalCell(context, value, x, y, width, height) {
+  const gradient = context.createLinearGradient(x, y, x + width, y + height);
+  gradient.addColorStop(0, '#444');
+  gradient.addColorStop(0.5, colors[value]);
+  gradient.addColorStop(1, '#ddd');
+  context.fillStyle = gradient;
+  context.fillRect(x, y, width, height);
+
+  const borderWidth = Math.max(width * 0.08, 0.02);
+  context.strokeStyle = '#303030';
+  context.lineWidth = borderWidth;
+  context.strokeRect(x, y, width, height);
+
+  const segmentWidth = Math.max(width * 0.04, 0.01);
+  context.strokeStyle = 'rgba(180, 180, 180, 0.35)';
+  context.lineWidth = segmentWidth;
+  context.beginPath();
+  context.moveTo(x + width / 2, y);
+  context.lineTo(x + width / 2, y + height);
+  context.moveTo(x, y + height / 2);
+  context.lineTo(x + width, y + height / 2);
+  context.stroke();
+}
+
 function drawMatrix(context, matrix, offset) {
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
         const xPos = x + offset.x;
         const yPos = y + offset.y;
-        const gradient = context.createLinearGradient(xPos, yPos, xPos + 1, yPos + 1);
-        gradient.addColorStop(0, '#444');
-        gradient.addColorStop(0.5, colors[value]);
-        gradient.addColorStop(1, '#ddd');
-        context.fillStyle = gradient;
-        context.fillRect(xPos, yPos, 1, 1);
-        context.strokeStyle = '#303030';
-        context.lineWidth = 0.05;
-        context.strokeRect(xPos, yPos, 1, 1);
-        context.strokeStyle = 'rgba(180, 180, 180, 0.35)';
-        context.lineWidth = 0.02;
-        context.beginPath();
-        context.moveTo(xPos + 0.5, yPos);
-        context.lineTo(xPos + 0.5, yPos + 1);
-        context.moveTo(xPos, yPos + 0.5);
-        context.lineTo(xPos + 1, yPos + 0.5);
-        context.stroke();
+        drawMetalCell(context, value, xPos, yPos, 1, 1);
       }
     });
   });
+}
+
+function drawPreviewMatrix(context, matrix, offset, cellSize) {
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        const xPos = offset.x + x * cellSize;
+        const yPos = offset.y + y * cellSize;
+        drawMetalCell(context, value, xPos, yPos, cellSize, cellSize);
+      }
+    });
+  });
+}
+
+function getMatrixBounds(matrix) {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  matrix.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value !== 0) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    });
+  });
+  if (minX === Infinity) {
+    return { width: 0, height: 0, offsetX: 0, offsetY: 0 };
+  }
+  return {
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+    offsetX: minX,
+    offsetY: minY,
+  };
+}
+
+function calculateDropInterval(level) {
+  return Math.max(DROP_INTERVAL_FLOOR, BASE_DROP_INTERVAL - (level - 1) * DROP_INTERVAL_STEP);
 }
 
 function buildKeyMap(controls) {
@@ -219,6 +273,7 @@ const games = [];
 let messageTimeout = null;
 let leaderboardTimeout = null;
 let audioContext = null;
+let paused = false;
 
 function initAudio() {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -233,33 +288,98 @@ function initAudio() {
   }
 }
 
+function createNoiseBuffer(duration, falloffPower = 1.5) {
+  const length = Math.floor(audioContext.sampleRate * duration);
+  const buffer = audioContext.createBuffer(1, length, audioContext.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    const progress = i / length;
+    const envelope = Math.pow(1 - progress, falloffPower);
+    data[i] = (Math.random() * 2 - 1) * envelope;
+  }
+  return buffer;
+}
+
 function playSound(type) {
   if (!audioContext || audioContext.state !== 'running') {
     return;
   }
+  const now = audioContext.currentTime;
+
+  if (type === 'land') {
+    const rubble = audioContext.createBufferSource();
+    rubble.buffer = createNoiseBuffer(0.32, 2.1);
+    const rubbleFilter = audioContext.createBiquadFilter();
+    rubbleFilter.type = 'lowpass';
+    rubbleFilter.frequency.setValueAtTime(420, now);
+    const rubbleGain = audioContext.createGain();
+    rubbleGain.gain.setValueAtTime(0.0001, now);
+    rubbleGain.gain.exponentialRampToValueAtTime(0.5, now + 0.02);
+    rubbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    rubble.connect(rubbleFilter);
+    rubbleFilter.connect(rubbleGain);
+    rubbleGain.connect(audioContext.destination);
+    rubble.start(now);
+    rubble.stop(now + 0.35);
+
+    const thump = audioContext.createOscillator();
+    const thumpGain = audioContext.createGain();
+    thump.type = 'triangle';
+    thump.frequency.setValueAtTime(95, now);
+    thump.frequency.exponentialRampToValueAtTime(48, now + 0.32);
+    thumpGain.gain.setValueAtTime(0.0001, now);
+    thumpGain.gain.exponentialRampToValueAtTime(0.45, now + 0.01);
+    thumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
+    thump.connect(thumpGain);
+    thumpGain.connect(audioContext.destination);
+    thump.start(now);
+    thump.stop(now + 0.34);
+    return;
+  }
+
+  if (type === 'clear') {
+    const blast = audioContext.createBufferSource();
+    blast.buffer = createNoiseBuffer(0.55, 1.15);
+    const blastFilter = audioContext.createBiquadFilter();
+    blastFilter.type = 'bandpass';
+    blastFilter.frequency.setValueAtTime(260, now);
+    blastFilter.Q.setValueAtTime(0.9, now);
+    const blastGain = audioContext.createGain();
+    blastGain.gain.setValueAtTime(0.0001, now);
+    blastGain.gain.exponentialRampToValueAtTime(0.9, now + 0.03);
+    blastGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+    blast.connect(blastFilter);
+    blastFilter.connect(blastGain);
+    blastGain.connect(audioContext.destination);
+    blast.start(now);
+    blast.stop(now + 0.6);
+
+    const boom = audioContext.createOscillator();
+    const boomGain = audioContext.createGain();
+    boom.type = 'sawtooth';
+    boom.frequency.setValueAtTime(160, now);
+    boom.frequency.exponentialRampToValueAtTime(40, now + 0.6);
+    boomGain.gain.setValueAtTime(0.0001, now);
+    boomGain.gain.exponentialRampToValueAtTime(0.7, now + 0.04);
+    boomGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+    boom.connect(boomGain);
+    boomGain.connect(audioContext.destination);
+    boom.start(now);
+    boom.stop(now + 0.65);
+    return;
+  }
+
   const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
   osc.connect(gain);
   gain.connect(audioContext.destination);
-
-  let frequency = 220;
-  let duration = 0.12;
-  if (type === 'clear') {
-    frequency = 460;
-    duration = 0.25;
-  } else if (type === 'land') {
-    frequency = 180;
-    duration = 0.1;
-  }
-
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(frequency, audioContext.currentTime);
-  gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.35, audioContext.currentTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
-
-  osc.start();
-  osc.stop(audioContext.currentTime + duration + 0.03);
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(220, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+  osc.start(now);
+  osc.stop(now + 0.25);
 }
 
 function showMessage(text, duration = 4000) {
@@ -346,10 +466,13 @@ function createGame({ canvas, panel, controls, label, modeType }) {
     arena,
     player,
     dropCounter: 0,
-    dropInterval: 1000,
+    dropInterval: calculateDropInterval(1),
     lastTime: 0,
     score: 0,
     lines: 0,
+    level: 1,
+    linesForNextLevel: 10,
+    nextMatrix: null,
     over: false,
     startTime: Date.now(),
     label,
@@ -362,15 +485,48 @@ function createGame({ canvas, panel, controls, label, modeType }) {
 
   game.scoreEl = panel.querySelector('.score');
   game.linesEl = panel.querySelector('.lines');
+  game.levelEl = panel.querySelector('.level');
   game.statusEl = panel.querySelector('.status');
+  game.previewCanvas = panel.querySelector('.next');
+  game.previewContext = game.previewCanvas ? game.previewCanvas.getContext('2d') : null;
+  if (game.previewContext) {
+    game.previewContext.imageSmoothingEnabled = false;
+  }
 
   game.updateScore = function () {
     this.scoreEl.textContent = this.score;
     this.linesEl.textContent = this.lines;
+    if (this.levelEl) {
+      this.levelEl.textContent = this.level;
+    }
   };
 
   game.updateStatus = function (text) {
     this.statusEl.textContent = text;
+  };
+
+  game.generateNextMatrix = function () {
+    const piece = pieces[(pieces.length * Math.random()) | 0];
+    return createPiece(piece);
+  };
+
+  game.drawPreview = function () {
+    if (!this.previewContext || !this.previewCanvas) {
+      return;
+    }
+    this.previewContext.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
+    if (!this.nextMatrix) {
+      return;
+    }
+    const size = Math.min(this.previewCanvas.width, this.previewCanvas.height);
+    if (!size) {
+      return;
+    }
+    const bounds = getMatrixBounds(this.nextMatrix);
+    const cellSize = size / 4;
+    const offsetX = (this.previewCanvas.width - bounds.width * cellSize) / 2 - bounds.offsetX * cellSize;
+    const offsetY = (this.previewCanvas.height - bounds.height * cellSize) / 2 - bounds.offsetY * cellSize;
+    drawPreviewMatrix(this.previewContext, this.nextMatrix, { x: offsetX, y: offsetY }, cellSize);
   };
 
   game.draw = function () {
@@ -383,13 +539,32 @@ function createGame({ canvas, panel, controls, label, modeType }) {
   };
 
   game.resetPlayer = function () {
-    const piece = pieces[(pieces.length * Math.random()) | 0];
-    this.player.matrix = createPiece(piece);
+    if (!this.nextMatrix) {
+      this.nextMatrix = this.generateNextMatrix();
+    }
+    this.player.matrix = this.nextMatrix;
+    this.nextMatrix = this.generateNextMatrix();
     this.player.pos.y = 0;
     this.player.pos.x = (this.arena[0].length / 2 | 0) - (this.player.matrix[0].length / 2 | 0);
+    this.drawPreview();
     if (collide(this.arena, this.player)) {
       this.handleGameOver();
     }
+  };
+
+  game.handleLevelProgress = function () {
+    let leveledUp = false;
+    while (this.lines >= this.linesForNextLevel) {
+      this.level += 1;
+      this.linesForNextLevel += 10;
+      leveledUp = true;
+    }
+    if (leveledUp) {
+      this.dropInterval = calculateDropInterval(this.level);
+      this.dropCounter = 0;
+      showMessage(`${this.label} reached Level ${this.level}!`);
+    }
+    return leveledUp;
   };
 
   game.arenaSweep = function () {
@@ -414,6 +589,7 @@ function createGame({ canvas, panel, controls, label, modeType }) {
       }
       this.score += addition;
       this.lines += rowCount;
+      this.handleLevelProgress();
       playSound('clear');
     }
     return rowCount;
@@ -434,7 +610,7 @@ function createGame({ canvas, panel, controls, label, modeType }) {
   };
 
   game.playerDrop = function () {
-    if (this.over) {
+    if (this.over || paused) {
       return;
     }
     this.player.pos.y++;
@@ -446,7 +622,7 @@ function createGame({ canvas, panel, controls, label, modeType }) {
   };
 
   game.playerHardDrop = function () {
-    if (this.over) {
+    if (this.over || paused) {
       return;
     }
     do {
@@ -461,7 +637,7 @@ function createGame({ canvas, panel, controls, label, modeType }) {
   };
 
   game.playerMove = function (dir) {
-    if (this.over) {
+    if (this.over || paused) {
       return;
     }
     this.player.pos.x += dir;
@@ -471,7 +647,7 @@ function createGame({ canvas, panel, controls, label, modeType }) {
   };
 
   game.playerRotate = function (dir) {
-    if (this.over) {
+    if (this.over || paused) {
       return;
     }
     const pos = this.player.pos.x;
@@ -514,6 +690,8 @@ function createGame({ canvas, panel, controls, label, modeType }) {
       return;
     }
     this.over = true;
+    this.nextMatrix = null;
+    this.drawPreview();
     if (this.modeType === 'duo-survival') {
       this.updateStatus('Defeated');
       if (this.opponent && !this.opponent.over) {
@@ -533,6 +711,8 @@ function createGame({ canvas, panel, controls, label, modeType }) {
       return;
     }
     this.over = true;
+    this.nextMatrix = null;
+    this.drawPreview();
     this.updateStatus('Winner!');
     const foe = loser ? loser.label : 'opponent';
     showMessage(`${this.label} defeats ${foe} in survival mode!`);
@@ -542,12 +722,20 @@ function createGame({ canvas, panel, controls, label, modeType }) {
     this.arena.forEach(row => row.fill(0));
     this.score = 0;
     this.lines = 0;
+    this.level = 1;
+    this.linesForNextLevel = 10;
+    this.nextMatrix = null;
     this.over = false;
     this.dropCounter = 0;
     this.lastTime = 0;
+    this.dropInterval = calculateDropInterval(this.level);
     this.startTime = Date.now();
+    this.player.matrix = null;
+    this.player.pos.x = 0;
+    this.player.pos.y = 0;
     this.updateScore();
     this.updateStatus('Playing');
+    this.drawPreview();
     this.resetPlayer();
     this.draw();
   };
@@ -559,6 +747,11 @@ function createGame({ canvas, panel, controls, label, modeType }) {
     }
     if (!this.lastTime) {
       this.lastTime = time;
+    }
+    if (paused) {
+      this.lastTime = time;
+      this.draw();
+      return;
     }
     const delta = time - this.lastTime;
     this.lastTime = time;
@@ -576,6 +769,34 @@ function resetGames() {
   games.length = 0;
   gameArea.innerHTML = '';
   scoreboard.innerHTML = '';
+  paused = false;
+}
+
+function togglePause() {
+  if (!games.length) {
+    return;
+  }
+  const hasActiveGame = games.some(game => !game.over);
+  if (!hasActiveGame) {
+    showMessage('All games are finished. Press R to restart or change mode.');
+    return;
+  }
+  paused = !paused;
+  games.forEach(game => {
+    if (!game.over) {
+      game.updateStatus(paused ? 'Paused' : 'Playing');
+    }
+  });
+  showMessage(paused ? 'Game paused. Press P to resume.' : 'Game resumed.');
+}
+
+function restartGames() {
+  if (!games.length) {
+    return;
+  }
+  paused = false;
+  games.forEach(game => game.start());
+  showMessage('Match restarted!');
 }
 
 function startMode(mode) {
@@ -586,6 +807,7 @@ function startMode(mode) {
   initAudio();
   clearMessage();
   resetGames();
+  paused = false;
 
   config.players.forEach(playerConfig => {
     const canvas = document.createElement('canvas');
@@ -597,9 +819,14 @@ function startMode(mode) {
     panel.className = 'player-panel';
     panel.innerHTML = `
       <h3>${playerConfig.label}</h3>
-      <div>Score: <span class="score">0</span></div>
-      <div>Lines: <span class="lines">0</span></div>
+      <div class="stat-line">Score: <span class="score">0</span></div>
+      <div class="stat-line">Lines: <span class="lines">0</span></div>
+      <div class="stat-line">Level: <span class="level">1</span></div>
       <div>Status: <span class="status">Ready</span></div>
+      <div class="next-wrapper">
+        <div class="next-label">Next</div>
+        <canvas class="next" width="120" height="120"></canvas>
+      </div>
     `;
     scoreboard.appendChild(panel);
 
@@ -627,6 +854,18 @@ function startMode(mode) {
 }
 
 function handleKey(event) {
+  if (event.code === 'KeyP') {
+    event.preventDefault();
+    togglePause();
+    return;
+  }
+
+  if (event.code === 'KeyR') {
+    event.preventDefault();
+    restartGames();
+    return;
+  }
+
   if (!games.length) {
     return;
   }
