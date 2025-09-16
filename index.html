@@ -6,10 +6,25 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="hud">
-    <div>Score: <span id="score">0</span></div>
+  <div id="modeSelect" class="overlay">
+    <div class="panel">
+      <h1>Industrial Tetris</h1>
+      <p>Select a game mode to begin</p>
+      <button data-mode="single">Single Score Mode</button>
+      <button data-mode="duo-score">Dual Score Mode</button>
+      <button data-mode="duo-survival">Dual Survival Mode</button>
+    </div>
   </div>
-  <canvas id="tetris" width="240" height="400"></canvas>
+
+  <div id="hud">
+    <div id="scoreboard"></div>
+    <button id="changeMode" class="metal-button hidden">Change Mode</button>
+  </div>
+
+  <div id="gameArea" class="hidden"></div>
+
+  <div id="message" class="hidden"></div>
+
   <div id="leaderboard" class="hidden">
     <h2>Leaderboard</h2>
     <ol id="leaders"></ol>
