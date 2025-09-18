@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tetris</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="modeSelect" class="overlay">
+    <div class="panel">
+      <h1>Industrial Tetris</h1>
+      <p>Select a game mode to begin</p>
+      <button data-mode="single">Single Score Mode</button>
+      <button data-mode="duo-score">Dual Score Mode</button>
+      <button data-mode="duo-survival">Dual Survival Mode</button>
+    </div>
+  </div>
+
+  <div id="controlsOverlay" class="overlay hidden controls-overlay">
+    <div class="panel controls-panel">
+      <h2>Control Reference</h2>
+      <p id="controlsModeNote" class="controls-note">Stack efficiently, keep an eye on the preview, and ride the rhythm of the falling blocks.</p>
+      <div class="controls-columns">
+        <section id="controlsPlayer1" class="controls-section">
+          <h3>Player 1</h3>
+          <ul class="control-list">
+            <li><span class="key">←</span> Move Left</li>
+            <li><span class="key">→</span> Move Right</li>
+            <li><span class="key">↓</span> Soft Drop</li>
+            <li><span class="key">↑</span> Rotate Clockwise</li>
+            <li><span class="key">/</span> Rotate Counter-Clockwise</li>
+            <li><span class="key">Space</span> Hard Drop</li>
+          </ul>
+        </section>
+        <section id="controlsPlayer2" class="controls-section hidden">
+          <h3>Player 2</h3>
+          <ul class="control-list">
+            <li><span class="key">A</span> Move Left</li>
+            <li><span class="key">D</span> Move Right</li>
+            <li><span class="key">S</span> Soft Drop</li>
+            <li><span class="key">W</span> Rotate Clockwise</li>
+            <li><span class="key">Q</span> Rotate Counter-Clockwise</li>
+            <li><span class="key">F</span> Hard Drop</li>
+          </ul>
+        </section>
+        <section class="controls-section">
+          <h3>Match</h3>
+          <ul class="control-list">
+            <li><span class="key">P</span> Pause / Resume</li>
+            <li><span class="key">R</span> Restart Current Match</li>
+            <li><span class="key">Mode</span> Change Mode</li>
+          </ul>
+        </section>
+      </div>
+      <button id="closeControls" class="metal-button">Close</button>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div id="hudCenter" class="hud-center">
+      <div class="hud-actions">
+        <button id="controlsButton" class="metal-button hidden">Controls</button>
+        <button id="changeMode" class="metal-button hidden">Change Mode</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="playfieldLayout" class="hidden">
+    <div id="scoreboardLeft" class="scoreboard-column hidden"></div>
+    <div id="gameArea" class="hidden"></div>
+    <div id="scoreboardRight" class="scoreboard-column hidden"></div>
+  </div>
+
+  <div id="message" class="hidden"></div>
+
+  <div id="leaderboard" class="hidden">
+    <h2>Leaderboard</h2>
+    <ol id="leaders"></ol>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
