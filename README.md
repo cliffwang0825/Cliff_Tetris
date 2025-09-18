@@ -1,4 +1,4 @@
-# Tetris Game  (By Cliff Wang 2025.9.18)
+# Tetris Game
 
 This is a web-based **Tetris** game developed with the assistance of **Codex**.  
 It supports multiple play modes for an engaging experience:
@@ -9,3 +9,8 @@ It supports multiple play modes for an engaging experience:
 
 The game is lightweight, runs directly in the browser, and requires no installation.  
 Just open the page and start playing! 🚀
+
+
+## 🚀 Try It Out
+
+👉 [Play the game here][(https://yourusername.github.io/your-repo-name/)](https://cliffwang0825.github.io/Cliff_Tetris/)
