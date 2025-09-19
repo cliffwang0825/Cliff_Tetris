@@ -1,16 +1,28 @@
-# Tetris Game
+# Starfighter Assault
 
-This is a web-based **Tetris** game developed with the assistance of **Codex**.  
-It supports multiple play modes for an engaging experience:
+星艦指揮官，歡迎來到 **Starfighter Assault** —— 一款直向卷軸的科幻射擊遊戲。你將駕駛紅白塗裝的主力機體，穿梭於多段波次節奏的宇宙戰場，對抗藍黑調性的敵方艦隊與最終的重型 BOSS。
 
-- 🎮 **Single Player Mode** – Classic Tetris gameplay with increasing difficulty.  
-- 👥 **Two Player Mode** – Competitive head-to-head battles in real-time.  
-- 🕹️ **Two Player Survival Mode** – Team up and survive as long as possible against rising challenges.  
+## 🎮 遊戲特色
 
-The game is lightweight, runs directly in the browser, and requires no installation.  
-Just open the page and start playing! 🚀
+- **三條命 × 三段護盾**：每條命擁有三點生命值，陣亡後下一條命將帶著 2 秒無敵時間回到戰場。
+- **炸彈反擊**：每條命可攜帶兩顆炸彈，投放後能清理全畫面敵兵與彈幕，為你爭取喘息空間。
+- **波次節奏與背景更替**：依照時間與分數推進的波次表，會逐步改變背景與敵人組成，最終迎來重型 BOSS 登場。
+- **戰術強化道具**：擊落運輸艦可掉落炸彈、加速、散彈、護盾等強化道具，協助你面對更猛烈的火力。
+- **計分系統**：不同敵機擁有不同分值，BOSS 更是高額獎勵，計分面板會即時更新。
+- **精緻金屬風 Sprites**：所有機體與道具皆以 SVG Sprites 呈現，主角以紅白為主色，敵方以藍黑貫穿整場戰役。
+- **沉浸式音訊**：內建射擊、爆炸、受擊音效與循環 BGM，亦提供一鍵靜音。
+- **跨裝置體驗**：支援鍵盤、滑鼠與觸控操作，畫面採響應式設計並鎖定 60 FPS，針對高 DPI 螢幕優化顯示。
 
+## 🕹️ 操作方式
 
-## 🚀 Try It Out
+| 平台 | 操作 |
+| --- | --- |
+| 桌機 | WASD / 方向鍵移動、J 鍵射擊、K 鍵投彈、M 鍵靜音 |
+| 觸控 | 拖曳機體即可移動並自動射擊，點擊畫面右下角的炸彈按鈕投放炸彈 |
 
-👉 [Play the game here][(https://yourusername.github.io/your-repo-name/)](https://cliffwang0825.github.io/Cliff_Tetris/)
+## 🚀 開始戰鬥
+
+1. 於專案根目錄開啟 `index.html` 即可在瀏覽器中遊玩。
+2. 若要部署到 GitHub Pages，請將整個專案推送到你的 `starfighter-game` 儲存庫，再於 GitHub 介面啟用 Pages。
+
+祝你在星際戰場凱旋歸來！

@@ -1,82 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Tetris</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div id="modeSelect" class="overlay">
-    <div class="panel">
-      <h1>Industrial Tetris</h1>
-      <p>Select a game mode to begin</p>
-      <button data-mode="single">Single Score Mode</button>
-      <button data-mode="duo-score">Dual Score Mode</button>
-      <button data-mode="duo-survival">Dual Survival Mode</button>
-    </div>
-  </div>
-
-  <div id="controlsOverlay" class="overlay hidden controls-overlay">
-    <div class="panel controls-panel">
-      <h2>Control Reference</h2>
-      <p id="controlsModeNote" class="controls-note">Stack efficiently, keep an eye on the preview, and ride the rhythm of the falling blocks.</p>
-      <div class="controls-columns">
-        <section id="controlsPlayer1" class="controls-section">
-          <h3>Player 1</h3>
-          <ul class="control-list">
-            <li><span class="key">←</span> Move Left</li>
-            <li><span class="key">→</span> Move Right</li>
-            <li><span class="key">↓</span> Soft Drop</li>
-            <li><span class="key">↑</span> Rotate Clockwise</li>
-            <li><span class="key">/</span> Rotate Counter-Clockwise</li>
-            <li><span class="key">Space</span> Hard Drop</li>
-          </ul>
-        </section>
-        <section id="controlsPlayer2" class="controls-section hidden">
-          <h3>Player 2</h3>
-          <ul class="control-list">
-            <li><span class="key">A</span> Move Left</li>
-            <li><span class="key">D</span> Move Right</li>
-            <li><span class="key">S</span> Soft Drop</li>
-            <li><span class="key">W</span> Rotate Clockwise</li>
-            <li><span class="key">Q</span> Rotate Counter-Clockwise</li>
-            <li><span class="key">F</span> Hard Drop</li>
-          </ul>
-        </section>
-        <section class="controls-section">
-          <h3>Match</h3>
-          <ul class="control-list">
-            <li><span class="key">P</span> Pause / Resume</li>
-            <li><span class="key">R</span> Restart Current Match</li>
-            <li><span class="key">Mode</span> Change Mode</li>
-          </ul>
-        </section>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Starfighter Assault</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Starfighter Assault</h1>
+      <div class="control-row">
+        <button id="startButton" class="primary">開始 / 暫停</button>
+        <button id="muteButton">🔇 靜音</button>
+        <button id="bombButton" class="accent">💣 投彈</button>
       </div>
-      <button id="closeControls" class="metal-button">Close</button>
-    </div>
-  </div>
+    </header>
 
-  <div id="hud">
-    <div id="hudCenter" class="hud-center">
-      <div class="hud-actions">
-        <button id="controlsButton" class="metal-button hidden">Controls</button>
-        <button id="changeMode" class="metal-button hidden">Change Mode</button>
+    <section class="hud">
+      <div class="stat">
+        <span class="label">分數</span>
+        <span id="score">0</span>
       </div>
-    </div>
-  </div>
+      <div class="stat">
+        <span class="label">波次</span>
+        <span id="wave">1</span>
+      </div>
+      <div class="stat">
+        <span class="label">生命</span>
+        <div id="lives" class="life-bar"></div>
+      </div>
+      <div class="stat">
+        <span class="label">炸彈</span>
+        <div id="bombs" class="bomb-bar"></div>
+      </div>
+      <div class="stat">
+        <span class="label">護盾</span>
+        <div id="shield" class="shield-bar"></div>
+      </div>
+    </section>
 
-  <div id="playfieldLayout" class="hidden">
-    <div id="scoreboardLeft" class="scoreboard-column hidden"></div>
-    <div id="gameArea" class="hidden"></div>
-    <div id="scoreboardRight" class="scoreboard-column hidden"></div>
-  </div>
+    <main class="game-wrapper">
+      <canvas id="gameCanvas" width="540" height="960" aria-label="Starfighter 遊戲畫面"></canvas>
+      <div class="touch-hint">
+        <p>📱 觸控：拖曳機體瞄準，點擊右下角投彈。</p>
+        <p>⌨️ 鍵盤：WASD / 方向鍵移動、J 射擊、K 投彈、M 靜音。</p>
+      </div>
+    </main>
 
-  <div id="message" class="hidden"></div>
+    <section class="guide">
+      <h2>任務簡報</h2>
+      <ul>
+        <li>每條命擁有 3 點耐久，共 3 條命。被擊中 3 次後換下一條命，入場時擁有 2 秒無敵。</li>
+        <li>擊落敵機累積分數並推進波次，波次會改變背景與敵人型態，最終迎戰重型 BOSS。</li>
+        <li>擊破特定敵機可掉落道具：炸彈、加速、散彈、護盾強化。</li>
+        <li>每條命攜帶 2 顆炸彈，投彈可清除全畫面敵人與彈幕。</li>
+        <li>支援手機與桌機，畫面鎖定 60 FPS，自動調整解析度與觸控靈敏度。</li>
+      </ul>
+    </section>
 
-  <div id="leaderboard" class="hidden">
-    <h2>Leaderboard</h2>
-    <ol id="leaders"></ol>
-  </div>
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
